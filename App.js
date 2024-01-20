@@ -1,10 +1,9 @@
 // App.js
-
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './src/screens/HomeScreen';
-import SettingsScreen from './src/screens/SettingsScreen';
+import SearchScreen from './src/screens/SearchScreen';
 import { Image } from 'react-native';
 
 const Tab = createBottomTabNavigator();
@@ -22,15 +21,15 @@ const App = () => {
                         headerStyle: {
                             height: 150,
                         },
-                        headerTitle: () => (
+                        headerTitle : () => (
                             <Image
-                                source={require('./assets/logo.png')}
                                 style={{ width: 82, height: 75 }}
+                                source={require('./assets/logo.png')}
                             />
                         ),
                     }}
                 />
-                <Tab.Screen name="Settings" component={SettingsScreen} />
+                <Tab.Screen name="Search" component={SearchScreen} />
             </Tab.Navigator>
         </NavigationContainer>
     );
