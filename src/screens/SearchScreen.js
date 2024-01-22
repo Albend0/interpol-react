@@ -1,23 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, FlatList, Pressable, Image, Text, TextInput, ActivityIndicator, StyleSheet } from 'react-native';
+import axios from 'axios';
 
 const SearchScreen = ({ navigation }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+    const [typingTimeout, setTypingTimeout] = useState(0);
 
-    const handleSearch = () => {
-        if (searchQuery.trim() === '') {
-            // Empty search query, handle as needed
+    const handleSearch = (query) => {
+        if (query.trim() === '') {
+            setSearchResults([]);
             return;
         }
 
-        const url = `https://ws-public.interpol.int/notices/v1/red?name=${searchQuery}&forename=${searchQuery}`;
+        const url = `https://ws-public.interpol.int/notices/v1/red?name=${query}`;
 
-        fetch(url)
-            .then((resp) => resp.json())
-            .then((json) => setSearchResults(json._embedded.notices))
+        // Utilisez le serveur intermédiaire CORS si nécessaire
+        // const apiUrl = 'https://cors-anywhere.herokuapp.com/' + url;
+
+        axios.get(url)
+            .then((response) => {
+                console.log('API Response:', response.data);
+                setSearchResults(response.data._embedded.notices);
+            })
             .catch((error) => console.error(error));
     };
+
+    const handleSearchWithDelay = (text) => {
+        clearTimeout(typingTimeout);
+
+        setTypingTimeout(setTimeout(() => {
+            handleSearch(text);
+        }, 1000)); // Mettez en attente pendant 1 seconde après la dernière frappe
+    };
+
+    useEffect(() => {
+        const cleanup = () => clearTimeout(typingTimeout);
+        return cleanup;
+    }, [typingTimeout]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -27,7 +47,7 @@ const SearchScreen = ({ navigation }) => {
                 value={searchQuery}
                 onChangeText={(text) => {
                     setSearchQuery(text);
-                    handleSearch();
+                    handleSearchWithDelay(text);
                 }}
             />
             {searchResults.length > 0 ? (
@@ -43,7 +63,6 @@ const SearchScreen = ({ navigation }) => {
                                 source={{ uri: item._links.thumbnail?.href ?? 'https://placeholder-image-url.com' }}
                                 style={styles.image}
                             />
-                            <Text style={styles.forename}>{item.forename}</Text>
                             <Text style={styles.name}>{item.name}</Text>
                         </Pressable>
                     )}
@@ -76,12 +95,6 @@ const styles = StyleSheet.create({
         borderColor: '#87CEFA',
         borderRadius: 8,
         alignItems: 'center',
-        textAlign: 'center',
-    },
-    forename: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        marginTop: 8,
         textAlign: 'center',
     },
     name: {

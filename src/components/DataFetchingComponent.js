@@ -1,7 +1,9 @@
 // src/components/DataFetchingComponent.js
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, FlatList, SafeAreaView, ActivityIndicator, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
+import { View, Text, Image, FlatList, SafeAreaView, ActivityIndicator, StyleSheet, Pressable } from 'react-native';
 import { fetchData, convertEntityIdToNoticeId } from '../utils/api';
 
 const DataFetchingComponent = () => {
@@ -9,7 +11,16 @@ const DataFetchingComponent = () => {
     const [data, setData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [loadingMore, setLoadingMore] = useState(false);
-
+    const navigation = useNavigation();
+    const handlePress = (item) => {
+        navigation.navigate('Details', {
+            name: item.name,
+            forename: item.forename,
+            images: item.images,
+            nationalities: item.nationalities,
+            // Ajoutez d'autres données dont vous avez besoin ici
+        });
+    };
     useEffect(() => {
         fetchDataFromApi();
     }, [currentPage]);
@@ -45,6 +56,7 @@ const DataFetchingComponent = () => {
                             forename: notice.forename || 'N/A',
                             name: notice.name || 'N/A',
                             images: imagesJson._links.thumbnail.href,
+                            nationalities: notice.nationalities,
                         };
                     })
                 );
@@ -75,11 +87,10 @@ const DataFetchingComponent = () => {
                     keyExtractor={(item) => item.noticeId}
                     numColumns={3}
                     renderItem={({ item }) => (
-                        <View style={styles.item}>
+                        <Pressable style={styles.item} onPress={() => handlePress(item)}>
                             <Image source={{ uri: item.images }} style={styles.image} />
-                            <Text style={styles.forename}>{item.forename}</Text>
                             <Text style={styles.name}>{item.name}</Text>
-                        </View>
+                        </Pressable>
                     )}
                     onEndReached={handleEndReached}
                     onEndReachedThreshold={0.1}
@@ -112,15 +123,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         textAlign: 'center',
     },
-    forename: {
+    name: {
         fontSize: 14,
         fontWeight: 'bold',
         marginTop: 8,
-        textAlign: 'center',
-    },
-    name: {
-        fontSize: 12,
-        marginTop: 6,
         textAlign: 'center',
     },
     image: {
