@@ -12,15 +12,28 @@ const DataFetchingComponent = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [loadingMore, setLoadingMore] = useState(false);
     const navigation = useNavigation();
+
     const handlePress = (item) => {
         navigation.navigate('Details', {
             name: item.name,
             forename: item.forename,
             images: item.images,
             nationalities: item.nationalities,
-            // Ajoutez d'autres données dont vous avez besoin ici
+            charge: item.charge,
+            dateOfBirth: item.date_of_birth,
+            weight: item.weight,
+            height: item.height,
+            sexId: item.sex_id,
+            countryOfBirthId: item.country_of_birth_id,
+            distinguishingMarks: item.distinguishing_marks,
+            eyesColorsId: item.eyes_colors_id,
+            hairsId: item.hairs_id,
+            placeOfBirth: item.place_of_birth,
+            noticeId: item.noticeId,
+            entityId: item.entity_id,
         });
     };
+
     useEffect(() => {
         fetchDataFromApi();
     }, [currentPage]);
@@ -34,9 +47,12 @@ const DataFetchingComponent = () => {
 
     const fetchDataFromApi = async () => {
         try {
+            setLoading(true);
+
             const response = await fetch(
                 `https://ws-public.interpol.int/notices/v1/red?page=${currentPage}`
             );
+
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -50,6 +66,9 @@ const DataFetchingComponent = () => {
                         const imagesResponse = await fetch(notice._links.images.href);
                         const imagesJson = await imagesResponse.json();
 
+                        const detailsResponse = await fetch(notice._links.self.href);
+                        const detailsJson = await detailsResponse.json();
+
                         return {
                             entity_id: notice.entity_id,
                             noticeId: convertEntityIdToNoticeId(notice.entity_id),
@@ -57,6 +76,16 @@ const DataFetchingComponent = () => {
                             name: notice.name || 'N/A',
                             images: imagesJson._links.thumbnail.href,
                             nationalities: notice.nationalities,
+                            charge: detailsJson.arrest_warrants[0]?.charge || 'N/A',
+                            date_of_birth: detailsJson.date_of_birth || 'N/A',
+                            weight: detailsJson.weight || 'N/A',
+                            height: detailsJson.height || 'N/A',
+                            sex_id: detailsJson.sex_id || 'N/A',
+                            country_of_birth_id: detailsJson.country_of_birth_id || 'N/A',
+                            distinguishing_marks: detailsJson.distinguishing_marks || 'N/A',
+                            eyes_colors_id: detailsJson.eyes_colors_id || [],
+                            hairs_id: detailsJson.hairs_id || [],
+                            place_of_birth: detailsJson.place_of_birth || 'N/A',
                         };
                     })
                 );
@@ -71,21 +100,13 @@ const DataFetchingComponent = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <SafeAreaView style={styles.container}>
-                <ActivityIndicator size="large" color="#0000ff" />
-            </SafeAreaView>
-        );
-    }
-
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.itemContainer}>
                 <FlatList
                     data={data}
                     keyExtractor={(item) => item.noticeId}
-                    numColumns={3}
+                    numColumns={2}
                     renderItem={({ item }) => (
                         <Pressable style={styles.item} onPress={() => handlePress(item)}>
                             <Image source={{ uri: item.images }} style={styles.image} />

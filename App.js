@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './src/screens/HomeScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import DetailsScreen from './src/screens/DetailsScreen';
+import ReportScreen from './src/screens/ReportScreen';
 import { Image } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -19,10 +20,23 @@ function HomeStack() {
                 name="Home"
                 component={HomeScreen}
                 options={{
-                    headerShown: false,
+                    headerTintColor: '#fff',
+                    headerStyle: {
+                        height: 150,
+                    },
+                    headerTitle: () => (
+                        <Image
+                            style={{ width: 82, height: 75 }}
+                            source={require('./assets/logo.png')}
+                        />
+                    ),
                 }}
             />
-            <Stack.Screen name="Details" component={DetailsScreen} />
+            <Stack.Screen
+                name="Details"
+                component={DetailsScreen}
+                // No custom header for Details screen
+            />
         </Stack.Navigator>
     );
 }
@@ -35,27 +49,30 @@ const App = () => {
                     name="Interpol - Wanted Persons"
                     component={HomeStack}
                     options={{
-                        tabBarLabel: 'Accueil',
+                        headerShown: false,
+                        tabBarLabel: 'Red Notices',
                         tabBarIcon: ({ color, size }) => (
-                            <Ionicons name="home" color={color} size={size} />
-                        ),
-                        headerTintColor: '#fff',
-                        headerStyle: {
-                            height: 150,
-                        },
-                        headerTitle : () => (
-                            <Image
-                                style={{ width: 82, height: 75 }}
-                                source={require('./assets/logo.png')}
-                            />
+                            <Ionicons name="globe" color={color} size={size} />
                         ),
                     }}
                 />
-                <Tab.Screen name="Search" component={SearchScreen}
+                <Tab.Screen
+                    name="Search"
+                    component={SearchScreen}
                     options={{
                         tabBarLabel: 'Recherche',
                         tabBarIcon: ({ color, size }) => (
                             <Ionicons name="search" color={color} size={size} />
+                        ),
+                    }}
+                />
+                <Tab.Screen
+                    name="Report"
+                    component={ReportScreen}
+                    options={{
+                        tabBarLabel: 'Signalements',
+                        tabBarIcon: ({ color, size }) => (
+                            <Ionicons name="alert" color={color} size={size} />
                         ),
                     }}
                 />
